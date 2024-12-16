@@ -16,6 +16,10 @@ public class GameMode {
 	public const string TeamElimination = "team elimination";
 	public const string KingOfTheHill = "king of the hill";
 	public const string Race = "race";
+
+
+
+	public string currentState = "Something";
 	public static List<string> allGameModes = new List<string>() {
 		Deathmatch, TeamDeathmatch, CTF, KingOfTheHill,
 		ControlPoint, Elimination, TeamElimination
@@ -423,6 +427,11 @@ public class GameMode {
 				}
 			}
 		}
+		if (Global.localServer!=null)this.currentState = "Players" + Global.localServer.players.Count.ToString() +"/"+Global.localServer.maxPlayers+" - HP - ("+level.mainPlayer.health.ToString() + "/" + level.mainPlayer.maxHealth.ToString()+")";
+		//Utilities.SDKDiscord.SetPresence("In-Game", Global.level.levelData.displayName + " - " + this.currentState);
+		
+
+	
 	}
 
 	private bool isBindingControl() {

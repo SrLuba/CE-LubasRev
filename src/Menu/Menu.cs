@@ -2,7 +2,6 @@
 
 public class Menu {
 	public static IMainMenu mainMenu;
-
 	public static bool inMenu { get { return mainMenu != null; } }
 	public static bool inChat { get { return chatMenu != null && chatMenu.typingChat; } }
 
@@ -14,7 +13,6 @@ public class Menu {
 			return chatMenu;
 		}
 	}
-
 	public static void change(IMainMenu newMenu, bool callOnExit = true) {
 		//if (Global.level?.mainPlayer?.isUsingSubTank() == true) return;
 		if (callOnExit && mainMenu is JoinMenuP2P joinMenu) {

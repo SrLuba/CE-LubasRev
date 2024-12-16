@@ -38,6 +38,8 @@ public class OptionsMenu : IMainMenu {
 	public FontType optionFontValue = FontType.Blue;
 
 	public OptionsMenu(IMainMenu mainMenu, bool inGame, int? charNum, int selectY) {
+
+		Utilities.SDKDiscord.SetupPresence("In-Menu", "Options");
 		previous = mainMenu;
 		this.inGame = inGame;
 		if (selectY == 1) {

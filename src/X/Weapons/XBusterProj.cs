@@ -190,10 +190,12 @@ public class Buster3Proj : Projectile {
 			float piHalf = MathF.PI / 2;
 			float xOffset = 8;
 			float partTime = (time * 0.75f);
+
 			for (int i = 0; i < 6; i++) {
 				float t = 0;
 				float xOff2 = 0;
 				float sinX = 0;
+
 				if (i < 3) {
 					t = partTime - (i * 0.025f);
 					xOff2 = i * xDir * 3;
@@ -203,18 +205,22 @@ public class Buster3Proj : Projectile {
 					xOff2 = (i - 3) * xDir * 3;
 					sinX = 5 * MathF.Sin((partTime) * 20);
 				}
+
 				float sinY = 15 * MathF.Sin(t * 20);
 				long zIndexTarget = zIndex - 1;
 				float currentOffset = (t * 20) % (MathF.PI * 2);
+
 				if (currentOffset > piHalf && currentOffset < piHalf * 3) {
 					zIndexTarget = zIndex + 1;
 				}
+
 				spriteMids[i].draw(
 					spriteMids[i].frameIndex,
 					pos.x + x + sinX - xOff2 + xOffset,
 					pos.y + y + sinY, xDir, yDir,
 					getRenderEffectSet(), 1, 1, 1, zIndexTarget
 				);
+
 				spriteMids[i].update();
 			}
 		}

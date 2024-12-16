@@ -28,6 +28,9 @@ public class WaitMenu : IMainMenu {
 	}
 
 	public void update() {
+		Utilities.SDKDiscord.SetupPresence("In-Lobby (" + server.name+") - Waiting!", server.players.Count.ToString() + "/" + server.maxPlayers.ToString(), server.name,  server.uniqueID.ToString());
+
+
 		recreateWaitTime -= Global.spf;
 		if (recreateWaitTime < 0) recreateWaitTime = 0;
 
@@ -162,6 +165,7 @@ public class WaitMenu : IMainMenu {
 				server = Helpers.deserialize<Server>(serverBytes);
 			}
 		}
+	
 	}
 
 	public string topMsg = "";

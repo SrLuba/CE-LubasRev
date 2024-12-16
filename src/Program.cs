@@ -65,14 +65,7 @@ class Program {
 			try {
 				Run(args, mode);
 			} catch (Exception e) {
-				/*
-				string crashDump = e.Message + "\n\n" +
-					e.StackTrace + "\n\nInner exception: " +
-					e.InnerException?.Message + "\n\n" +
-					e.InnerException?.StackTrace;
-				Helpers.showMessageBox(crashDump.Truncate(1000), "Fatal Error!");
-				throw;
-				*/
+				
 				Logger.LogFatalException(e);
 				Logger.logException(e, false, "Fatal exception", true);
 				Thread.Sleep(1000);
@@ -87,6 +80,7 @@ class Program {
 		Global.writePath = Global.assetPath;
 #endif
 		Global.Init();
+
 		if (Enum.GetNames(typeof(WeaponIds)).Length > 256) {
 			throw new Exception("Too many weapon ids, max 256");
 		}
@@ -95,42 +89,7 @@ class Program {
 			Global.promptDebugSettings();
 		}
 
-		/*
-		if (!Global.debug || Global.testDocumentsInDebug) {
-			string baseDocumentsPath = Helpers.getBaseDocumentsPath();
-			string mmxodDocumentsPath = Helpers.getMMXODDocumentsPath();
-
-			#if WINDOWS
-			if (string.IsNullOrEmpty(mmxodDocumentsPath) &&
-				!string.IsNullOrEmpty(baseDocumentsPath) &&
-				!Options.main.autoCreateDocFolderPromptShown
-			) {
-				Options.main.autoCreateDocFolderPromptShown = true;
-				if (Helpers.showMessageBoxYesNo(
-					"Auto-create MMXOD folder in Documents folder?\n" +
-					"This will be used to store settings, controls, logs and more " +
-					"and will persist across updates.", "MMXOD folder not found in Documents"
-				)) {
-					try {
-						Directory.CreateDirectory(baseDocumentsPath + "/MMXOD");
-						mmxodDocumentsPath = Helpers.getMMXODDocumentsPath();
-					} catch (Exception e) {
-						Helpers.showMessageBox(
-							"Could not create MMXOD folder in Documents. Error details:\n\n" +
-							e.Message, "Error creating MMXOD folder"
-						);
-					}
-				}
-			}
-			#endif
-			if (!string.IsNullOrEmpty(mmxodDocumentsPath)) {
-				Global.writePath = mmxodDocumentsPath;
-				if (Directory.Exists(mmxodDocumentsPath + "/assets")) {
-					Global.assetPath = Global.writePath;
-				}
-			}
-		}
-		*/
+		
 
 		if (!checkSystemRequirements()) {
 			return;
@@ -154,25 +113,14 @@ class Program {
 		Fonts.loadFontSprites();
 
 		List<string> loadText = new();
-		loadText.Add("NOM BIOS v" + Global.version + ", An Energy Sunstar Ally");
-		loadText.Add("Copyright ©2114, NOM Corporation");
-		loadText.Add("");
-		loadText.Add("MMXOD " + Global.shortForkName + " " + Global.versionName + " " + Global.subVersionName);
-		loadText.Add("");
-		if (String.IsNullOrEmpty(Options.main.playerName)) {
-			loadText.Add("User: Dr. Cain");
-		} else {
-			loadText.Add("User: " + Options.main.playerName);
-		}
-		// Get CPU name here.
-		loadText.Add("CPU: " + getCpuName());
-		loadText.Add("Memory: " + (GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024) + "kb");
-		loadText.Add("");
 
+		Utilities.SDKDiscord.Start();
+		loadText.Add("Discord OK.");
+		//Utilities.SDKDiscord.SetPresence("Loading into Game", "Opening...");
 		// Input
 		Global.input = new Input(false);
 		setupControllers(window);
-
+		//Utilities.SDKDiscord.SetPresence("Loading into Game", "Setting up Shaders...");
 		if (Options.main.areShadersDisabled() == false) {
 			loadText.Add("Shaders OK.");
 			loadShaders();
@@ -196,23 +144,23 @@ class Program {
 			urlText += " Radmin detected.";
 		}
 		loadText[loadText.Count - 1] = urlText;
-
+		//Utilities.SDKDiscord.SetPresence("Loading into Game", "Loading Sprites...");
 		loadText.Add("Loading Sprites...");
 		loadMultiThread(loadText, window, loadImages);
 		loadText[loadText.Count - 1] = $"Loaded {Global.textures.Count} Sprites.";
-
+		//Utilities.SDKDiscord.SetPresence("Loading into Game", "Loading Sprites JSONS...");
 		loadText.Add("Loading Sprite JSONS...");
 		loadMultiThread(loadText, window, loadSprites);
 		loadText[loadText.Count - 1] = $"Loaded {Global.realSpriteCount} Sprite JSONs.";
-
+		//Utilities.SDKDiscord.SetPresence("Loading into Game", "Loading Maps...");
 		loadText.Add("Loading Maps...");
 		loadMultiThread(loadText, window, loadLevels);
 		loadText[loadText.Count - 1] = $"Loaded {Global.levelDatas.Count} Maps.";
-
+		//Utilities.SDKDiscord.SetPresence("Loading into Game", "Loading SFX...");
 		loadText.Add("Loading SFX...");
 		loadMultiThread(loadText, window, loadSounds);
 		loadText[loadText.Count - 1] = $"Loaded {Global.soundCount} SFX files.";
-
+		//Utilities.SDKDiscord.SetPresence("Loading into Game", "Loading Music...");
 		loadText.Add("Loading Music...");
 		loadMultiThread(loadText, window, loadMusics);
 		loadText[loadText.Count - 1] = $"Loaded {Global.musics.Count} Songs.";
@@ -225,16 +173,12 @@ class Program {
 			Global.renderTextureQueueKeys.Clear();
 			loadText[loadText.Count - 1] = $"Created {textureCount} render textures.";
 		}
-
+	
 		loadText.Add("Calculating checksum...");
 		loadMultiThread(loadText, window, Global.computeChecksum);
 		loadText[loadText.Count - 1] = "Checksum OK.";
 
-		/*if (!Helpers.FileExists("region.json")) {
-			Helpers.WriteToFile("region.json", regionJson);
-		}*/
 
-		// Only used to initialize the Global.ignoreUpgradeChecks variable
 		var primeRegions = Global.regions;
 
 		Global.regionPingTask = Task.Run(() => {
@@ -248,63 +192,11 @@ class Program {
 		GC.Collect();
 		GC.WaitForPendingFinalizers();
 
-		// Force startup config to be fetched
+
 		Menu.change(new MainMenu());
-		//Global.changeMusic(Global.level.levelData.getTitleTheme());
-		switch(Helpers.randomRange(1, 15)) {
-			// Stage Selects
-			case 1:
-				Global.changeMusic("stageSelect_X1");
-				break;
-			case 2:
-				Global.changeMusic("stageSelect2_X1");
-				break;
-			case 3:
-				Global.changeMusic("stageSelect_X2");
-				break;
-			case 4:
-				Global.changeMusic("stageSelect2_X2");
-				break;
-			case 5:
-				Global.changeMusic("stageSelect_X3");
-				break;
-			case 6:
-				Global.changeMusic("stageSelect2_X3");
-				break;
-			// Introduction
-			case 7:
-				Global.changeMusic("opening_X3");
-				break;
-			case 8:
-				Global.changeMusic("opening_X2");
-				break;
-			// Extra
-			case 9:
-				Global.changeMusic("ending_X3");
-				break;
-			case 10:
-				Global.changeMusic("ending_X2");
-				break;
-			case 11:
-				Global.changeMusic("ending_X1");
-				break;
-			case 12:
-				Global.changeMusic("credits_X1");
-				break;
-			case 13:
-				Global.changeMusic("demo_X2");
-				break;
-			case 14:
-				Global.changeMusic("demo_X3");
-				break;
-			case 15:
-				Global.changeMusic("laboratory_X2");
-				break;
-			default:
-				Global.changeMusic("stageSelect_X1");
-				break;
-		}
+		Global.changeMusic("stageSelect_X1");
 		
+	
 		if (mode == 1) {
 			HostMenu menu = new HostMenu(new MainMenu(), null, false, false, true);
 			Menu.change(menu);
@@ -360,6 +252,9 @@ class Program {
 	}
 
 	private static void update() {
+
+		Utilities.SDKDiscord.Update();
+
 		if (Global.levelStarted()) {
 			Global.level.update();
 			if (Global.serverClient != null && Global.level.nonSkippedframeCount % 300 == 0) {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using SFML.Graphics;
@@ -30,6 +31,8 @@ public class MainMenu : IMainMenu {
 	public int state;
 
 	public MainMenu() {
+		Utilities.SDKDiscord.SetupPresence("In-Menu", "Main Menu");
+
 		if (string.IsNullOrWhiteSpace(Options.main.playerName)) {
 			state = 0;
 		} else if (Options.main.regionIndex == null) {
@@ -77,64 +80,63 @@ public class MainMenu : IMainMenu {
 		if (Time >= 1) {
 			Time = 0;
 			Confirm = false;
-			// Before joining or creating make sure client is up to date
-			if (selectY == 0 || selectY == 1) {
-				Menu.change(new PreJoinOrHostMenu(this, selectY == 0));
-			} else if (selectY == 2) {
-				Menu.change(new HostMenu(this, null, true, true));
-			} else if (selectY == 3) {
-				Menu.change(new PreLoadoutMenu(this));
-			//} else if (selectY == 4) {
-			//	Menu.change(new PreControlMenu(this, false));
-			} else if (selectY == 4) {
-				Menu.change(new PreOptionsMenu(this, false));
-			} else if (selectY == 5) {
-				System.Environment.Exit(1);
+
+			IMainMenu menuRes = new MainMenu();
+
+			switch (selectY) {
+				case 0:
+					menuRes = new JoinMenuP2P(true);
+					break;
+				case 1:
+					menuRes = new HostMenu(this, null, false, false, true);
+					break;
+				case 2:
+					menuRes = new HostMenu(this, null, true, true);
+					break;
+				case 3:
+					menuRes = new PreLoadoutMenu(this);
+					break;
+				case 4:
+					menuRes = new PreOptionsMenu(this, false);
+					break;
+				case 5:
+					System.Environment.Exit(1);
+					break;
 			}
-		}
+
+			Menu.change(menuRes);
 		MenuConfirmSound();
 		DebugVoid();
 	}
 
 	public void render() {
-		float WD = Global.halfScreenW;
-
-		//string selectionImage = "";
-		/*
-		if (selectY == 0) selectionImage = "joinserver";
-		else if (selectY == 1) selectionImage = "hostserver";
-		else if (selectY == 2) selectionImage = "vscpu";
-		else if (selectY == 3) selectionImage = "loadout";
-		else if (selectY == 4) selectionImage = "controls";
-		else if (selectY == 5) selectionImage = "options";
-		else if (selectY == 6) selectionImage = "quit";
-		*/
+		float WD = Global.screenW - 16;
+		float WD_Selected = 2;
+	
 		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0, 0, 1);
-		DrawWrappers.DrawTextureHUD(Global.textures["mainmenutitle"], 10, -3);
-	//	DrawWrappers.DrawTextureHUD(Global.textures["cursor"], startX - 10, startPos - 2 + (selectY * yDistance));
-	//	DrawWrappers.DrawTextureHUD(Global.textures[selectionImage], 208, 107);
-	//	DrawWrappers.DrawTextureHUD(Global.textures["mainmenubox"], 199, 98);
-		RenderCharacters();
+		DrawWrappers.DrawTextureHUD(Global.textures["mainmenutitle"], 72, -3);
+
+		//RenderCharacters();
 		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0,0, Time2);
-		Fonts.drawText(FontType.BlueMenu, "JOIN MATCH", WD, optionPos[0].y, Alignment.Center, selected: selectY == 0);
-		Fonts.drawText(FontType.BlueMenu, "CREATE MATCH", WD, optionPos[1].y,  Alignment.Center, selected: selectY == 1);
-		Fonts.drawText(FontType.BlueMenu, "VS. CPU", WD, optionPos[2].y,  Alignment.Center, selected: selectY == 2);
-		Fonts.drawText(FontType.BlueMenu, "LOADOUT", WD, optionPos[3].y, Alignment.Center, selected: selectY == 3);
-	//	Fonts.drawText(FontType.BlueMenu, "Controls", WD, optionPos[4].y, selected: selectY == 4);
-		Fonts.drawText(FontType.BlueMenu, "OPTION MODE", WD, optionPos[4].y, Alignment.Center, selected: selectY == 4);
-		Fonts.drawText(FontType.BlueMenu, "QUIT", WD, optionPos[5].y, Alignment.Center, selected: selectY == 5);
+
+		Fonts.drawText(FontType.BlueMenu, "JOIN MATCH",(selectY == 0) ? WD- WD_Selected : WD, optionPos[0].y, Alignment.Right, selected: selectY == 0);
+		Fonts.drawText(FontType.BlueMenu, "CREATE MATCH", (selectY == 1) ? WD - WD_Selected : WD, optionPos[1].y,  Alignment.Right, selected: selectY == 1);
+		Fonts.drawText(FontType.BlueMenu, "VS. CPU", (selectY == 2) ? WD - WD_Selected : WD, optionPos[2].y,  Alignment.Right, selected: selectY == 2);
+		Fonts.drawText(FontType.BlueMenu, "LOADOUT", (selectY == 3) ? WD - WD_Selected : WD, optionPos[3].y, Alignment.Right, selected: selectY == 3);
+		Fonts.drawText(FontType.BlueMenu, "OPTION MODE", (selectY == 4) ? WD - WD_Selected : WD, optionPos[4].y, Alignment.Right, selected: selectY == 4);
+		Fonts.drawText(FontType.BlueMenu, "QUIT", (selectY == 5) ? WD - WD_Selected : WD, optionPos[5].y, Alignment.Right, selected: selectY == 5);
 
 		Fonts.drawTextEX(
 			FontType.Grey, "[MUP]/[MDOWN]: Change selection, [OK]: Choose",
-			Global.screenW / 2, Global.screenH - 9, Alignment.Center
+			Global.screenW - 8, Global.screenH - 9, Alignment.Right
 		);
-		
+		Fonts.drawTextEX(
+			FontType.Grey, "Luba's Rev",
+			6, Global.screenH - 9, Alignment.Left
+		);
 		if (state == 0) {
 			float top = Global.screenH * 0.4f;
 
-			//DrawWrappers.DrawRect(
-			//	5, top - 20, Global.screenW - 5, top + 60, true, new Color(0, 0, 0), 0, ZIndex.HUD, false
-			//);
 			DrawWrappers.DrawRect(
 				5, 5, Global.screenW - 5, Global.screenH - 5,
 				true, new Color(0, 0, 0), 0, ZIndex.HUD, false
@@ -163,14 +165,8 @@ public class MainMenu : IMainMenu {
 				FontType.Blue, "Loading...", Global.screenW / 2, top, alignment: Alignment.Center
 			);
 		} else {
-			string versionText = Global.shortForkName + " v" + Global.version + " " + Global.subVersionShortName;
-			/*
-			if (Helpers.compareVersions(Global.version, Global.serverVersion) == -1 &&
-				Global.serverVersion != decimal.MaxValue
-			) {
-				versionText += "(Update available)";
-			}
-			*/
+			/*string versionText = Global.shortForkName + " v" + Global.version + " " + Global.subVersionShortName;
+		
 			int offset = 2;
 			if (Global.checksum != Global.prodChecksum) {
 				Fonts.drawText(FontType.DarkPurple, Global.CRC32Checksum, 2, offset);
@@ -180,7 +176,7 @@ public class MainMenu : IMainMenu {
 			offset += 10;
 			if (Global.radminIP != "") {
 				Fonts.drawText(FontType.DarkGreen, "Radmin", 2, offset);
-			}
+			}*/
 		}
 		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0,0, Time);
 		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0,0, Time2);

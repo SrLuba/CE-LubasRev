@@ -14,7 +14,7 @@ public partial class Character : Actor, IDamagable {
 		"Zero",
 		"Vile",
 		"Axl",
-		"Sigma"
+		"Ligma"
 	};
 
 	// Health.

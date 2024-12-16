@@ -241,6 +241,7 @@ public class HostMenu : IMainMenu {
 		this.isP2P = isP2P;
 		if (isLAN) hidden = false;
 
+
 		prevMapSizeIndex = mapSizeIndex;
 
 		if (inGameServer != null) {
@@ -434,6 +435,10 @@ public class HostMenu : IMainMenu {
 				}
 			)
 		);
+
+		string p2pText = isP2P ? "P2P" : "Not P2P";
+
+		//Utilities.SDKDiscord.SetPresence("In-Menu", "Making Lobby (" + p2pText + ", "+selectedLevel.displayName+" "+selectedMapSize+") ");
 		// Map
 		menuOptions.Add(
 			new MenuOption(startX, startY,

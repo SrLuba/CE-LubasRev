@@ -855,6 +855,7 @@ public partial class Level {
 		startGridCount = getGridCount();
 		startTGridCount = getTGridCount();
 
+	
 		//var p = Global.level.mainPlayer;
 		//new Mechaniloid(new Point(128, 128), p, 1, new MechaniloidWeapon(p, MechaniloidType.Hopper), MechaniloidType.Hopper, p.getNextActorNetId(), true);
 	}

@@ -67,16 +67,7 @@ public class PreJoinOrHostMenu : IMainMenu {
 				IMainMenu nextMenu = null;
 				if (isJoin) nextMenu = new JoinMenu(false);
 				else nextMenu = new HostMenu(prevMenu, null, false, false);
-				// Bans are useless and do not work without a main relay so are disabled.
-				/*
-				if (canPlayOnline(out string[] warningMessage)) {
-					if (warningMessage != null) {
-						Menu.change(new ErrorMenu(warningMessage, nextMenu));
-					} else {
-						Menu.change(nextMenu);
-					}
-				}
-				*/
+			
 				Menu.change(nextMenu);
 			}
 		}
