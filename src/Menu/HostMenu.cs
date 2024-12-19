@@ -54,6 +54,8 @@ public class HostMenu : IMainMenu {
 		}
 	}
 
+	public int maxPlayers = 12;
+
 	// Match settings that persist. If adding a setting here add it to HostMenuSettings class
 	public int gameModeIndex {
 		get { return savedMatchSettings.hostMenuSettings.gameModeIndex; }
@@ -563,7 +565,7 @@ public class HostMenu : IMainMenu {
 							if (Global.input.isPressedOrHeldMenu(Control.MenuLeft) && playTo > 1) {
 								playTo--;
 								playToDirty = true;
-							} else if (Global.input.isPressedOrHeldMenu(Control.MenuRight) && playTo < 100) {
+							} else if (Global.input.isPressedOrHeldMenu(Control.MenuRight)) {
 								playTo++;
 								playToDirty = true;
 							}
@@ -584,9 +586,33 @@ public class HostMenu : IMainMenu {
 					}
 				)
 			);
-		}
-		// CPU Count
+		}   
+		// Player Count
 		menuOptions.Add(
+			new MenuOption(startX, startY,
+				() => {
+					if (Global.input.isPressedOrHeldMenu(Control.MenuLeft)) {
+						maxPlayers--;
+						if (maxPlayers < 2) maxPlayers = 2;
+					
+					} else if (
+						Global.input.isPressedOrHeldMenu(Control.MenuRight)
+					) {
+						maxPlayers++;
+					}
+				},
+				(Point pos, int index) => {
+					Fonts.drawText(
+						FontType.Blue, "Max Players: " + this.maxPlayers, pos.x, pos.y,
+						selected: index == selectArrowPosY
+					);
+				},
+				"Set Max Players"
+			)
+		);
+
+		// CPU Count
+		/*menuOptions.Add(
 			new MenuOption(startX, startY,
 				() => {
 					if (Global.input.isPressedOrHeldMenu(Control.MenuLeft) && botCount > 0) {
@@ -616,7 +642,8 @@ public class HostMenu : IMainMenu {
 				},
 				"Configure CPUs"
 			)
-		);
+		);*/
+
 		// Time limit
 		if (!isTraining && !isRace) {
 			menuOptions.Add(
@@ -903,19 +930,7 @@ public class HostMenu : IMainMenu {
 				errorMessage = "Can't select training in public matches.";
 				return;
 			}
-			/*if (!selectedLevel.isCustomMap && !isOffline && !isHiddenOrLan() && selectedGameMode == GameMode.Race) {
-				errorMessage = "Race only in private match or custom maps.";
-				return;
-			}*/
-
-			if (isLAN) {
-				localIPAddress = LANIPHelper.GetLocalIPAddress();
-				if (string.IsNullOrEmpty(localIPAddress)) {
-					errorMessage = "Couldn't get LAN IP address.";
-					return;
-				}
-			}
-
+		
 			if (inGame && !Global.level.is1v1()) {
 				completeAction();
 			} else {
@@ -927,11 +942,7 @@ public class HostMenu : IMainMenu {
 
 		if (string.IsNullOrEmpty(errorMessage)) {
 			menuOptions[selectArrowPosY].update();
-			/*
-			if (Global.input.isPressedMenu(Control.MenuBack) && !inGame) {
-				Global.serverClient = null;
-				Menu.change(previous);
-			} */
+		
 			if (Time2 >= 1 && !inGame) {
 				Menu.change(previous);
 				Global.serverClient = null;
@@ -940,15 +951,7 @@ public class HostMenu : IMainMenu {
 				previous.Confirm = false;
 				previous.Confirm2 = false;
 			}
-			/*
-			else if (Global.input.isPressedMenu(Control.MenuEnter) && inGame)
-			{
-				Menu.change(new ConfirmLeaveMenu(this, "Are you sure you want to leave?", () =>
-				{
-					Global.leaveMatchSignal = new LeaveMatchSignal(LeaveMatchScenario.MatchOver, null, null, null);
-				}));
-			}
-			*/
+			
 		}
 	}
 
@@ -966,7 +969,7 @@ public class HostMenu : IMainMenu {
 				oldServer.gameVersion, oldServer.region,
 				serverName, selectedLevel.name,
 				selectedLevel.shortName, selectedGameMode,
-				playTo, botCount, oldServer.maxPlayers,
+				playTo, botCount, this.maxPlayers,
 				timeLimit, fixedCamera, hidden,
 				(NetcodeModel)netcodeModel, netcodeModelUnderPing,
 				isLAN, mirrored, useLoadout, Global.checksum,
@@ -975,12 +978,8 @@ public class HostMenu : IMainMenu {
 				disableHtSt, disableVehicles, teamNum
 			);
 			server.uniqueID = oldServer.uniqueID;
-			server.isP2P = oldServer.isP2P;
-			if (server.isP2P) {
-				Global.leaveMatchSignal = new LeaveMatchSignal(LeaveMatchScenario.RecreateMS, server, null);
-			} else {
-				Global.leaveMatchSignal = new LeaveMatchSignal(LeaveMatchScenario.Recreate, server, null);
-			}
+			server.isP2P = true;
+			Global.leaveMatchSignal = new LeaveMatchSignal(LeaveMatchScenario.RecreateMS, server, null);
 		} else if (isP2P) {
 			createP2PMatch();
 		} else if (!isOffline) {
@@ -1032,7 +1031,7 @@ public class HostMenu : IMainMenu {
 		var response = Global.matchmakingQuerier.createServer(serverData);
 		if (response.server != null) {
 			var inputServerPlayer = new ServerPlayer(
-				playerName, -1, true, charNum, hostTeam, Global.deviceId, null, serverData.region.getPing()
+				playerName, -1, true, charNum, hostTeam, Global.deviceId, null, serverData.region.getPing(), Utilities.SDKDiscord.localAvatar
 				);
 			Global.serverClient = ServerClient.Create(
 				serverData.region.ip, serverData.name, response.server.port, inputServerPlayer, out JoinServerResponse joinServerResponse, out string error
@@ -1053,7 +1052,7 @@ public class HostMenu : IMainMenu {
 	public void createOfflineMatch() {
 		var me = new ServerPlayer(
 			Options.main.playerName, 0, true,
-			SelectCharacterMenu.playerData.charNum, team, Global.deviceId, null, 0
+			SelectCharacterMenu.playerData.charNum, team, Global.deviceId, null, 0, Utilities.SDKDiscord.localAvatar
 		);
 		if (GameMode.isStringTeamMode(selectedGameMode)) me.alliance = team;
 
@@ -1104,7 +1103,7 @@ public class HostMenu : IMainMenu {
 		var localServer = new Server(
 			Global.version, null, serverName, selectedLevel.name,
 			selectedLevel.shortName, gameMode,
-			playTo, botCount, selectedLevel.maxPlayers,
+			playTo, botCount, this.maxPlayers,
 			timeLimit, fixedCamera, false,
 			(NetcodeModel)netcodeModel, netcodeModelUnderPing,
 			false, mirrored, useLoadout,
@@ -1124,22 +1123,18 @@ public class HostMenu : IMainMenu {
 		}
 		var me = new ServerPlayer(
 			Options.main.playerName, 0, true,
-			SelectCharacterMenu.playerData.charNum, team, Global.deviceId, null, 0
+			SelectCharacterMenu.playerData.charNum, team, Global.deviceId, null, 0, Utilities.SDKDiscord.localAvatar
 		);
 		if (GameMode.isStringTeamMode(selectedGameMode)) {
 			me.alliance = team;
 		}
 		System.Threading.Thread.Sleep(50);
-		/*
-		Global.serverClient = ServerClient.CreateDirect(
-			"127.0.0.1", 65535, me,
-			out JoinServerResponse joinServerResponse, out string error
-		);
-		*/
+		
 		Global.serverClient = ServerClient.CreateDirect(
 			"127.0.0.1", localServer.port, me,
 			out JoinServerResponse joinServerResponse, out string error
 		);
+
 
 		if (joinServerResponse != null && error == null) {
 			Menu.change(new WaitMenu(new MainMenu(), localServer, false));
@@ -1182,7 +1177,7 @@ public class HostMenu : IMainMenu {
 		}
 		var me = new ServerPlayer(
 			Options.main.playerName, 0, true,
-			SelectCharacterMenu.playerData.charNum, null, Global.deviceId, null, 0
+			SelectCharacterMenu.playerData.charNum, null, Global.deviceId, null, 0, Utilities.SDKDiscord.localAvatar
 		);
 		Global.serverClient = ServerClient.CreateDirect(
 			"127.0.0.1", localServer.port, me,

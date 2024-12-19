@@ -10,6 +10,7 @@ using MMXOnline;
 using System.Threading;
 using Discord;
 using System.Text.RegularExpressions;
+using System.Net;
 
 namespace Utilities {
 	
@@ -18,10 +19,31 @@ namespace Utilities {
 		public static Discord.Activity currentActivity;
 		public static Discord.ActivityManager activityManager;
 		public static Discord.UserManager userManager;
+		static User self;
+		public static bool gotUser = false;
+
+		public static string localAvatar = "";
+		public static byte[] localAvatarDownload;
 		public static void Start() {
 			ds = new Discord.Discord(1317955826979307741, (UInt64)Discord.CreateFlags.Default);
 			activityManager = ds.GetActivityManager();
 			userManager = ds.GetUserManager();
+
+			userManager.OnCurrentUserUpdate += UserUpdate;
+			
+
+		}
+		public static void UserUpdate() {
+
+			self = userManager.GetCurrentUser();
+			Options.main.playerName = self.Username;
+			Console.WriteLine("Nos van a follar a todos");
+			localAvatar = "https://cdn.discordapp.com/avatars/" + self.Id + "/" + self.Avatar;
+			
+			localAvatarDownload = new System.Net.WebClient().DownloadData(localAvatar);
+			
+
+			gotUser = true;
 		}
 		public static void SetupPresence(string state, string details) {
 
@@ -67,11 +89,10 @@ namespace Utilities {
 			};
 
 		}
-		public static void OnJoin(long serverID) {
-			JoinMenuP2P M = new JoinMenuP2P(true);
-	
-			M.LookAndConnect(serverID);
-			Menu.change(M);
+		public static void OnJoin(string serverIP) {
+		
+			ClientShenanigans.DirectConnect(serverIP, 7777);
+		
 		}
 		public static bool joining = false;
 		public static void Update() {
@@ -83,17 +104,16 @@ namespace Utilities {
 			activityManager.OnActivityJoin += secret => {
 				Console.WriteLine("OnJoin {0}", secret);
 				if (!joining) { 
-					OnJoin((long)Convert.ToDouble(secret));
+					OnJoin(secret);
 					joining = true;
 				}
 			};
-
+			
 			activityManager.OnActivityJoinRequest += (ref Discord.User user) =>
 			{
 				Console.WriteLine("OnJoinRequest {0} {1}", user.Username, user.Id);
 			};
-
-			
+	
 		}
 	}
 }

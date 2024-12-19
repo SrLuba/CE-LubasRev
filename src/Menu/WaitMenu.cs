@@ -28,7 +28,7 @@ public class WaitMenu : IMainMenu {
 	}
 
 	public void update() {
-		Utilities.SDKDiscord.SetupPresence("In-Lobby (" + server.name+") - Waiting!", server.players.Count.ToString() + "/" + server.maxPlayers.ToString(), server.name,  server.uniqueID.ToString());
+		Utilities.SDKDiscord.SetupPresence("In-Lobby (" + server.name+") - Waiting!", server.players.Count.ToString() + "/" + server.maxPlayers.ToString(), server.name,  Global.radminIP);
 
 
 		recreateWaitTime -= Global.spf;
@@ -70,12 +70,7 @@ public class WaitMenu : IMainMenu {
 		if (Global.serverClient.isHost) {
 			if ((Global.input.isPressedMenu(Control.MenuConfirm) || Global.quickStartOnline) && recreateWaitTime <= 0) {
 				Action onCreate = new Action(() => {
-					/*if (server.players.Count > 1) {
-						Logger.logEvent(
-							"host_2ormore", Logger.getMatchLabel(server.level, server.gameMode),
-							server.players.Count
-						);
-					}*/
+			
 					Global.level.startLevel(server, false);
 					var rpcStartLevelJson = new RPCStartLevelJson(server);
 					Global.serverClient.rpc(RPC.startLevel, JsonConvert.SerializeObject(rpcStartLevelJson));

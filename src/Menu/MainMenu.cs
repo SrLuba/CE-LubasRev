@@ -44,7 +44,12 @@ public class MainMenu : IMainMenu {
 
 	//float state1Time;
 	public void update() {
-		if (state == 0) {
+		if (Utilities.SDKDiscord.localAvatarDownload != null && Global.discord_avatar_texture==null) {
+			Global.discord_avatar_texture = new Texture(Utilities.SDKDiscord.localAvatarDownload);
+			Console.WriteLine("Loading Avatar {0} Texture ", Utilities.SDKDiscord.localAvatarDownload.ToString());
+			System.IO.File.WriteAllBytes(AppContext.BaseDirectory + "/s.png", Utilities.SDKDiscord.localAvatarDownload);
+		}
+			if (state == 0) {
 			blinkTime += Global.spf;
 			if (blinkTime >= 1f) blinkTime = 0;
 
@@ -74,7 +79,7 @@ public class MainMenu : IMainMenu {
 			);
 			return;
 		}
-		
+
 		if (Time == 0) Helpers.menuUpDown(ref selectY, 0, 5);
 		TimeUpdate();
 		if (Time >= 1) {
@@ -105,19 +110,20 @@ public class MainMenu : IMainMenu {
 			}
 
 			Menu.change(menuRes);
-		MenuConfirmSound();
-		DebugVoid();
+			MenuConfirmSound();
+			DebugVoid();
+		}
 	}
 
 	public void render() {
+		
 		float WD = Global.screenW - 16;
 		float WD_Selected = 2;
 	
-		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0, 0, 1);
+		
 		DrawWrappers.DrawTextureHUD(Global.textures["mainmenutitle"], 72, -3);
 
-		//RenderCharacters();
-		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0,0, Time2);
+	
 
 		Fonts.drawText(FontType.BlueMenu, "JOIN MATCH",(selectY == 0) ? WD- WD_Selected : WD, optionPos[0].y, Alignment.Right, selected: selectY == 0);
 		Fonts.drawText(FontType.BlueMenu, "CREATE MATCH", (selectY == 1) ? WD - WD_Selected : WD, optionPos[1].y,  Alignment.Right, selected: selectY == 1);
@@ -134,6 +140,7 @@ public class MainMenu : IMainMenu {
 			FontType.Grey, "Luba's Rev",
 			6, Global.screenH - 9, Alignment.Left
 		);
+	
 		if (state == 0) {
 			float top = Global.screenH * 0.4f;
 
@@ -164,22 +171,19 @@ public class MainMenu : IMainMenu {
 			Fonts.drawText(
 				FontType.Blue, "Loading...", Global.screenW / 2, top, alignment: Alignment.Center
 			);
-		} else {
-			/*string versionText = Global.shortForkName + " v" + Global.version + " " + Global.subVersionShortName;
-		
-			int offset = 2;
-			if (Global.checksum != Global.prodChecksum) {
-				Fonts.drawText(FontType.DarkPurple, Global.CRC32Checksum, 2, offset);
-				offset += 10;
-			}
-			Fonts.drawText(FontType.DarkBlue, versionText, 2, offset);
-			offset += 10;
-			if (Global.radminIP != "") {
-				Fonts.drawText(FontType.DarkGreen, "Radmin", 2, offset);
-			}*/
 		}
-		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0,0, Time);
-		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0,0, Time2);
+
+		if (Global.discord_avatar_texture != null) { 
+			SFML.Graphics.Sprite sprite = new SFML.Graphics.Sprite( Global.discord_avatar_texture );
+			sprite.TextureRect = new IntRect(0, 0, 128, 128);
+			sprite.Position = new SFML.System.Vector2f(-185f, -105f);
+			sprite.Scale = new SFML.System.Vector2f(.2f, .2f);
+			Global.window.Draw(sprite);
+		}
+
+		Fonts.drawText(
+				FontType.Blue, Options.main.playerName + " (Discord OK!) ", 36, 4, alignment: Alignment.Left
+			);
 	}
 	public void TimeUpdate() {
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) Confirm = true;
@@ -226,6 +230,7 @@ public class MainMenu : IMainMenu {
 				break;
 			default:
 				Global.sprites["menu_megaman"].drawToHUD(0,WD - 42, startPos - 2 + (selectY * yDistance));
+				
 				break;
 		}
 	}
@@ -399,7 +404,7 @@ public class MainMenu : IMainMenu {
 			} else if (Global.quickStart) {
 				var selectedLevel = Global.levelDatas.FirstOrDefault(ld => ld.Key == Global.quickStartMap).Value;
 				var scm = new SelectCharacterMenu(Global.quickStartCharNum);
-				var me = new ServerPlayer(Options.main.playerName, 0, true, Global.quickStartCharNum, Global.quickStartTeam, Global.deviceId, null, 0);
+				var me = new ServerPlayer(Options.main.playerName, 0, true, Global.quickStartCharNum, Global.quickStartTeam, Global.deviceId, null, 0, Utilities.SDKDiscord.localAvatar);
 				if (selectedLevel.name == "training" && GameMode.isStringTeamMode(Global.quickStartTrainingGameMode)) me.alliance = Global.quickStartTeam;
 				if (selectedLevel.name != "training" && GameMode.isStringTeamMode(Global.quickStartGameMode)) me.alliance = Global.quickStartTeam;
 

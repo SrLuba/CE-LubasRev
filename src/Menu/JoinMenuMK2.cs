@@ -33,44 +33,7 @@ public class JoinMenuP2P : IMainMenu {
 			getServer();
 		}
 	}
-	public void LookAndConnect(string matchID) {
-		NetIncomingMessage? msg;
-		// Respond to connection messages.
-		while ((msg = netClient.ReadMessage()) != null) {
-			if (msg.MessageType == NetIncomingMessageType.UnconnectedData) {
-				byte msgByte = msg.ReadByte();
-				switch (msgByte) {
-					case 100:
-						receiveHostList(msg);
-						refreshing = false;
-						break;
-					// Recieve server details to connect.
-					case 101:
-						(long, SimpleServerData, IPEndPoint, IPEndPoint?) serverData = receiveServerDetails(msg);
-						if (serverData.Item2 != null) {
-							joinServer(serverData.Item1, serverData.Item2, serverData.Item3, serverData.Item4);
-							return;
-						}
-						break;
-				}
-			}
-		}
-		int index = -1;
-		for (int i = 0; i < serverIndexes.Length; i++) {
-			if (serverInfo[serverIndexes[i]].name.ToLower() == matchID.ToLower()) { index = i; break; }
-		}
-		if (index < 0) return;
-		Action exitAction = () => {
-			Menu.change(new ConnectionWaitMenuP2P(this, serverIndexes[index]));
-		};
-		Menu.change(
-			new SelectCharacterMenu(
-				new MainMenu(), false, false, false,
-				false, false, false, exitAction
-			),
-			false
-		);
-	}
+
 	public void getServer() {
 		NetOutgoingMessage regMsg = netClient.CreateMessage();
 		regMsg.Write((byte)MasterServerMsg.HostList);
@@ -304,7 +267,7 @@ public class JoinMenuP2P : IMainMenu {
 
 		var inputServerPlayer = new ServerPlayer(
 			playerName, -1, false, SelectCharacterMenu.playerData.charNum,
-			null, Global.deviceId, null, 0
+			null, Global.deviceId, null, 0, Utilities.SDKDiscord.localAvatar
 		);
 		Global.serverClient = ServerClient.CreateHolePunch(
 			netClient, serverId, ipEndPoint, radminIP, inputServerPlayer,

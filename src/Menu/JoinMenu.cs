@@ -297,7 +297,7 @@ public class JoinMenu : IMainMenu {
 
 		var inputServerPlayer = new ServerPlayer(
 			playerName, -1, false, SelectCharacterMenu.playerData.charNum,
-			null, Global.deviceId, null, serverToJoin.region.getPing()
+			null, Global.deviceId, null, serverToJoin.region.getPing(), Utilities.SDKDiscord.localAvatar
 		);
 		Global.serverClient = ServerClient.Create(
 			serverToJoin.region.ip, serverToJoin.name, serverToJoin.port,

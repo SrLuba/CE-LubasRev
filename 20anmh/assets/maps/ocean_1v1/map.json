@@ -1,0 +1,231 @@
+{
+  "name": "ocean_1v1",
+  "path": "maps/ocean_1v1/map.json",
+  "backgroundPath": "maps/ocean_1v1/background.png",
+  "backwallPath": "maps/ocean_1v1/backwall.png",
+  "foregroundPath": "maps/ocean_1v1/foreground.png",
+  "width": 384,
+  "height": 216,
+  "maxPlayers": 2,
+  "waterY": -100,
+  "mirrorX": 0,
+  "mirroredOnly": false,
+  "shortName": "ocean_1v1",
+  "displayName": "ocean 1v1",
+  "instances": [
+    {
+      "name": "Collision Shape1",
+      "properties": {},
+      "objectName": "Collision Shape",
+      "mirrorEnabled": 0,
+      "points": [
+        {
+          "x": 2,
+          "y": 188
+        },
+        {
+          "x": 383,
+          "y": 188
+        },
+        {
+          "x": 383,
+          "y": 226
+        },
+        {
+          "x": 2,
+          "y": 226
+        }
+      ]
+    },
+    {
+      "name": "Collision Shape2",
+      "properties": {},
+      "objectName": "Collision Shape",
+      "mirrorEnabled": 0,
+      "points": [
+        {
+          "x": 370,
+          "y": -4
+        },
+        {
+          "x": 387,
+          "y": -4
+        },
+        {
+          "x": 387,
+          "y": 196
+        },
+        {
+          "x": 370,
+          "y": 196
+        }
+      ]
+    },
+    {
+      "name": "Collision Shape3",
+      "properties": {},
+      "objectName": "Collision Shape",
+      "mirrorEnabled": 0,
+      "points": [
+        {
+          "x": 1,
+          "y": -2
+        },
+        {
+          "x": 16,
+          "y": -2
+        },
+        {
+          "x": 16,
+          "y": 192
+        },
+        {
+          "x": 1,
+          "y": 192
+        }
+      ]
+    },
+    {
+      "name": "Collision Shape4",
+      "properties": {},
+      "objectName": "Collision Shape",
+      "mirrorEnabled": 0,
+      "points": [
+        {
+          "x": 14,
+          "y": -12
+        },
+        {
+          "x": 379,
+          "y": -12
+        },
+        {
+          "x": 379,
+          "y": 12
+        },
+        {
+          "x": 14,
+          "y": 12
+        }
+      ]
+    },
+    {
+      "name": "Spawn Point1",
+      "properties": {},
+      "objectName": "Spawn Point",
+      "mirrorEnabled": 0,
+      "pos": {
+        "x": 93,
+        "y": 179
+      }
+    },
+    {
+      "name": "Spawn Point2",
+      "properties": {},
+      "objectName": "Spawn Point",
+      "mirrorEnabled": 0,
+      "pos": {
+        "x": 300,
+        "y": 179
+      }
+    },
+    {
+      "name": "Spawn Point3",
+      "properties": {},
+      "objectName": "Spawn Point",
+      "mirrorEnabled": 0,
+      "pos": {
+        "x": 135,
+        "y": 178
+      }
+    },
+    {
+      "name": "Spawn Point4",
+      "properties": {
+        "flipX": true
+      },
+      "objectName": "Spawn Point",
+      "mirrorEnabled": 0,
+      "pos": {
+        "x": 265,
+        "y": 179
+      }
+    }
+  ],
+  "parallaxes": [],
+  "mergedWalls": [
+    [
+      [
+        370,
+        188
+      ],
+      [
+        370,
+        12
+      ],
+      [
+        16,
+        11.999999999999998
+      ],
+      [
+        16,
+        188
+      ]
+    ],
+    [
+      [
+        387,
+        196
+      ],
+      [
+        387,
+        -4
+      ],
+      [
+        379,
+        -4
+      ],
+      [
+        379,
+        -12
+      ],
+      [
+        14,
+        -12
+      ],
+      [
+        14,
+        -2
+      ],
+      [
+        1,
+        -2
+      ],
+      [
+        1,
+        192
+      ],
+      [
+        2,
+        192
+      ],
+      [
+        2,
+        226
+      ],
+      [
+        383,
+        226
+      ],
+      [
+        383,
+        196
+      ]
+    ]
+  ],
+  "supportsCTF": false,
+  "supportsCP": false,
+  "supportsKOTH": false,
+  "supportsRace": false,
+  "supportsVehicles": false
+}

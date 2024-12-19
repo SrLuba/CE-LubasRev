@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Newtonsoft.Json;
 using SFML.Graphics;
 using SFML.System;
@@ -182,14 +183,6 @@ public class GameMode {
 	}
 
 	public float getAmmoModifier() {
-		/*
-		if (level.is1v1())
-		{
-			if (Global.level.server.playTo == 1) return 0.25f;
-			if (Global.level.server.playTo == 2) return 0.5f;
-		}
-		return 1;
-		*/
 		return 1;
 	}
 
@@ -220,14 +213,6 @@ public class GameMode {
 			startTimeLimit = remainingTime;
 		}
 		chatMenu = new ChatMenu();
-	}
-
-	static List<ChatEntry> getTestChatHistory() {
-		var test = new List<ChatEntry>();
-		for (int i = 0; i < 30; i++) {
-			test.Add(new ChatEntry("chat entry " + i.ToString(), "gm19", null, false));
-		}
-		return test;
 	}
 
 	public void removeAllGates() {
@@ -722,6 +707,33 @@ public class GameMode {
 			} else if (drawPlayer.character is Vile vileR && vileR.rideMenuWeapon.isMenuOpened) {
 				drawRideArmorIcons();
 			}
+			
+
+			for (int i = 0; i < Global.level.players.Count; i++) {
+				if (Global.level.players[i].character != null) { 
+					if (!Global.level.players[i].isMainPlayer) {
+						Fonts.drawText(
+							FontType.Golden, Global.level.players[i].name, Global.level.players[i].character.pos.x,
+							Global.level.players[i].character.pos.y - 48f, alignment: Alignment.Center, isWorldPos: true
+						);
+
+						if (Global.level.players[i].avatarID != "" && !Global.level.players[i].isMainPlayer && !Global.level.players[i].isBot) {
+							if (Global.level.players[i].localAvatarDownload == null) {
+								Global.level.players[i].localAvatarDownload = new System.Net.WebClient().DownloadData(Global.level.players[i].avatarID);
+							} else {
+								SFML.Graphics.Sprite sprite = new SFML.Graphics.Sprite(new SFML.Graphics.Texture(Global.level.players[i].localAvatarDownload));
+								sprite.TextureRect = new IntRect(0, 0, 128, 128);
+								sprite.Position = new SFML.System.Vector2f(Global.level.players[i].character.pos.x+16f, Global.level.players[i].character.pos.y-48f);
+								sprite.Scale = new SFML.System.Vector2f(.1f, .1f);
+								Global.window.Draw(sprite);
+							}
+						}
+					}
+					Console.WriteLine(Global.level.players[i].name + " - avatarid: " + Global.level.players[i].avatarID);
+					
+				}
+			}
+			Console.WriteLine(drawPlayer.charXPos.ToString() + "/" + drawPlayer.charYPos.ToString());
 		}
 
 		if (!Global.level.is1v1()) {
@@ -736,19 +748,6 @@ public class GameMode {
 		if (isOver) {
 			drawWinScreen();
 		} else {
-			/*int startY = Options.main.showFPS ? 201 : 208;
-			if (!Menu.inMenu && !Global.hideMouse && Options.main.showInGameMenuHUD) {
-				if (!shouldDrawRadar()) {
-					Helpers.drawTextStd(
-						TCat.HUD, Helpers.controlText("[ESC]: Menu"),
-						Global.screenW - 5, startY, Alignment.Right
-					);
-					Helpers.drawTextStd(
-						TCat.HUD, Helpers.controlText("[TAB]: Score"),
-						Global.screenW - 5, startY + 7, Alignment.Right
-					);
-				}
-			}*/
 
 			drawRespawnHUD();
 		}
@@ -922,6 +921,7 @@ public class GameMode {
 				Global.sprites["drlight_portrait"].drawToHUD(index, 15, boxStartY + boxHeight * 0.5f);
 			}
 		}
+
 	}
 
 	public void setHUDErrorMessage(Player player, string message, bool playSound = true, bool resetCooldown = false) {
@@ -1754,6 +1754,7 @@ public class GameMode {
 	}
 
 	public void drawWeaponSwitchHUD(Player player) {
+		
 		if (player.isZero && !player.isDisguisedAxl) return;
 
 		if (player.isSelectingRA()) {
@@ -1929,6 +1930,9 @@ public class GameMode {
 		if (player == mainPlayer && mainPlayer.isSelectingCommand()) {
 			drawMaverickCommandIcons();
 		}
+	
+		Fonts.drawText(FontType.DarkBlue, Options.main.playerName + " (Discord OK!) ", 0, 226, alignment: Alignment.Left);
+
 	}
 
 	public void drawZeroGigaCooldown(Weapon weapon, int x = 11, int y = 159) {
@@ -2065,10 +2069,6 @@ public class GameMode {
 			}
 		}
 
-		/*if (level.mainPlayer.weapon == weapon && !level.mainPlayer.isSelectingCommand()) {
-			drawWeaponSlotSelected(x, y);
-		}*/
-
 		if (weapon is AxlWeapon && Options.main.axlLoadout.altFireArray[Weapon.wiToFi(weapon.index)] == 1) {
 			//Helpers.drawWeaponSlotSymbol(x - 8, y - 8, "²");
 		}
@@ -2078,17 +2078,6 @@ public class GameMode {
 				Helpers.drawWeaponSlotSymbol(x - 8, y - 8, "ª");
 			}
 
-			/*
-			string commandModeSymbol = null;
-			//if (level.mainPlayer.isSummoner()) commandModeSymbol = "SUM";
-			if (level.mainPlayer.isPuppeteer()) commandModeSymbol = "PUP";
-			if (level.mainPlayer.isStriker()) commandModeSymbol = "STK";
-			if (level.mainPlayer.isTagTeam()) commandModeSymbol = "TAG";
-			if (commandModeSymbol != null)
-			{
-				Helpers.drawTextStd(commandModeSymbol, x - 7, y + 4, Alignment.Left, fontSize: 12);
-			}
-			*/
 		}
 
 		if (mw != null) {
@@ -2347,13 +2336,6 @@ public class GameMode {
 			float y = startY - ((i + 1) * height);
 			int index = i;
 			Global.sprites["hud_maverick_command"].drawToHUD(index, x, y);
-			/*
-			if (i == 1)
-			{
-				Global.sprites["hud_maverick_command"].drawToHUD(3, x - height, y);
-				Global.sprites["hud_maverick_command"].drawToHUD(4, x + height, y);
-			}
-			*/
 		}
 
 		for (int i = 0; i < MaverickWeapon.maxCommandIndex + 1; i++) {
@@ -2363,17 +2345,6 @@ public class GameMode {
 				DrawWrappers.DrawRectWH(x - iconW, y - iconH, iconW * 2, iconH * 2, false, new Color(0, 224, 0), 1, ZIndex.HUD, false);
 			}
 		}
-
-		/*
-		if (level.mainPlayer.maverickWeapon.selCommandIndexX == 0)
-		{
-			DrawWrappers.DrawRectWH(startX - height - iconW, startY - (height * 2) - iconH, iconW * 2, iconH * 2, false, new Color(0, 224, 0), 1, ZIndex.HUD, false);
-		}
-		if (level.mainPlayer.maverickWeapon.selCommandIndexX == 2)
-		{
-			DrawWrappers.DrawRectWH(startX + height - iconW, startY - (height * 2) - iconH, iconW * 2, iconH * 2, false, new Color(0, 224, 0), 1, ZIndex.HUD, false);
-		}
-		*/
 	}
 
 	public void drawRideArmorIcons() {

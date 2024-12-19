@@ -1,15 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<!--Common properties-->
 	<PropertyGroup>
 		<LangVersion>13.0</LangVersion>
 		<AssemblyName>MMXOD</AssemblyName>
-		<OutputType>WinExe</OutputType>
+		<OutputType>Exe</OutputType>
 		<Nullable>enable</Nullable>
 		<Version>20</Version>
 		<AssemblyVersion>20.0</AssemblyVersion>
 		<ApplicationIcon>app.ico</ApplicationIcon>
-		<TargetFramework>net6.0-windows</TargetFramework>
-		<ImplicitUsings>false</ImplicitUsings>
+		<TargetFramework>net9.0-windows7.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
 		<SelfContained>false</SelfContained>
 		<OutputPath>./bin/</OutputPath>
 		<!--OutDir>./bin/anycpu/</OutDir-->
@@ -19,6 +19,8 @@
 		<Deterministic>true</Deterministic>
 		<NeutralLanguage>en</NeutralLanguage>
 		<FileVersion>20.0</FileVersion>
+		<SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+		<StartupObject>MMXOnline.Program</StartupObject>
 	</PropertyGroup>
 
 	<!--For making output go to anycpu if the RuntimeIdentifier is empty-->
@@ -45,5 +47,8 @@
 		<PackageReference Include="Profanity.Detector" Version="0.1.8" />
 		<PackageReference Include="SpaceWizards.Lidgren.Network" Version="0.3.1" />
 		<PackageReference Include="System.IO.Hashing" Version="9.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="src\Utilities\NewFolder\" />
 	</ItemGroup>
 </Project>

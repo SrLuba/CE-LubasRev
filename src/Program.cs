@@ -17,6 +17,10 @@ using SFML.System;
 using SFML.Window;
 using static SFML.Window.Keyboard;
 
+
+/*
+	Megaman X Multiplayer DeathMatch Code Cleanup and Overhaul Project (Luba's Rev)
+ */
 namespace MMXOnline;
 
 class Program {
@@ -43,29 +47,39 @@ class Program {
 			}
 			GameMain(args, mode);
 		}
+		CloseProgram();
+	}
+
+	#if WINDOWS
+		[DllImport("kernel32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		static extern bool AllocConsole();
+	#endif
+
+	// Handles User Close Request
+	static void CloseProgram() {
+		
 		if (Global.localServer != null && (
 			Global.localServer.s_server.Status == NetPeerStatus.Running ||
 			Global.localServer.s_server.Status == NetPeerStatus.Starting
 		)) {
 			Global.localServer.shutdown("Host closed the game.");
 		}
+
 		Environment.Exit(0);
 	}
 
-#if WINDOWS
-	[DllImport("kernel32.dll", SetLastError = true)]
-	[return: MarshalAs(UnmanagedType.Bool)]
-	static extern bool AllocConsole();
-#endif
-
 	static void GameMain(string[] args, int mode) {
-		if (Debugger.IsAttached) {
+		if (Debugger.IsAttached) { 
+			// is Debugger attached.
+
 			Run(args, mode);
 		} else {
+			// if Debugger isn't attached (User's Entry Point)
+
 			try {
 				Run(args, mode);
 			} catch (Exception e) {
-				
 				Logger.LogFatalException(e);
 				Logger.logException(e, false, "Fatal exception", true);
 				Thread.Sleep(1000);
@@ -75,10 +89,6 @@ class Program {
 	}
 
 	static void Run(string[] args, int mode) {
-#if MAC
-		Global.assetPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + "/";
-		Global.writePath = Global.assetPath;
-#endif
 		Global.Init();
 
 		if (Enum.GetNames(typeof(WeaponIds)).Length > 256) {
@@ -89,13 +99,7 @@ class Program {
 			Global.promptDebugSettings();
 		}
 
-		
-
-		if (!checkSystemRequirements()) {
-			return;
-		}
-
-		Global.initMainWindow(Options.main);
+		Global.InitMainWindow(Options.main);
 		RenderWindow window = Global.window;
 
 		window.Closed += new EventHandler(onClosed);
@@ -116,7 +120,9 @@ class Program {
 
 		Utilities.SDKDiscord.Start();
 		loadText.Add("Discord OK.");
-		//Utilities.SDKDiscord.SetPresence("Loading into Game", "Opening...");
+
+		Utilities.SDKDiscord.SetupPresence("Loading into Game", "Opening...");
+		
 		// Input
 		Global.input = new Input(false);
 		setupControllers(window);
@@ -144,23 +150,28 @@ class Program {
 			urlText += " Radmin detected.";
 		}
 		loadText[loadText.Count - 1] = urlText;
-		//Utilities.SDKDiscord.SetPresence("Loading into Game", "Loading Sprites...");
+		
+		Utilities.SDKDiscord.SetupPresence("Loading into Game", "Loading Sprites...");
 		loadText.Add("Loading Sprites...");
 		loadMultiThread(loadText, window, loadImages);
 		loadText[loadText.Count - 1] = $"Loaded {Global.textures.Count} Sprites.";
-		//Utilities.SDKDiscord.SetPresence("Loading into Game", "Loading Sprites JSONS...");
+		
+		Utilities.SDKDiscord.SetupPresence("Loading into Game", "Loading Sprites JSONS...");
 		loadText.Add("Loading Sprite JSONS...");
 		loadMultiThread(loadText, window, loadSprites);
 		loadText[loadText.Count - 1] = $"Loaded {Global.realSpriteCount} Sprite JSONs.";
-		//Utilities.SDKDiscord.SetPresence("Loading into Game", "Loading Maps...");
+		
+		Utilities.SDKDiscord.SetupPresence("Loading into Game", "Loading Maps...");
 		loadText.Add("Loading Maps...");
 		loadMultiThread(loadText, window, loadLevels);
 		loadText[loadText.Count - 1] = $"Loaded {Global.levelDatas.Count} Maps.";
-		//Utilities.SDKDiscord.SetPresence("Loading into Game", "Loading SFX...");
+		
+		Utilities.SDKDiscord.SetupPresence("Loading into Game", "Loading SFX...");
 		loadText.Add("Loading SFX...");
 		loadMultiThread(loadText, window, loadSounds);
 		loadText[loadText.Count - 1] = $"Loaded {Global.soundCount} SFX files.";
-		//Utilities.SDKDiscord.SetPresence("Loading into Game", "Loading Music...");
+		
+		Utilities.SDKDiscord.SetupPresence("Loading into Game", "Loading Music...");
 		loadText.Add("Loading Music...");
 		loadMultiThread(loadText, window, loadMusics);
 		loadText[loadText.Count - 1] = $"Loaded {Global.musics.Count} Songs.";
@@ -173,7 +184,12 @@ class Program {
 			Global.renderTextureQueueKeys.Clear();
 			loadText[loadText.Count - 1] = $"Created {textureCount} render textures.";
 		}
-	
+
+		for (int i = 0; i < 10; i++) {
+			loadText.Add("Nos follaran a todos...");
+			
+		}
+		
 		loadText.Add("Calculating checksum...");
 		loadMultiThread(loadText, window, Global.computeChecksum);
 		loadText[loadText.Count - 1] = "Checksum OK.";
@@ -194,7 +210,7 @@ class Program {
 
 
 		Menu.change(new MainMenu());
-		Global.changeMusic("stageSelect_X1");
+		Global.ChangeMusicRandom();
 		
 	
 		if (mode == 1) {
@@ -202,17 +218,17 @@ class Program {
 			Menu.change(menu);
 			menu.completeAction();
 		} else if (mode == 2) {
-			// TODO: Fix this.y
-			// Somehow we need to get the data before we connect.
 			Menu.change(new JoinMenuP2P(true));
 			var me = new ServerPlayer(
 				Options.main.playerName, 0, false,
-				SelectCharacterMenu.playerData.charNum, null, Global.deviceId, null, 0
+				SelectCharacterMenu.playerData.charNum, null, Global.deviceId, null, 0, Utilities.SDKDiscord.localAvatar
 			);
+
 			Global.serverClient = ServerClient.CreateDirect(
 				args[0], int.Parse(args[1]), me,
 				out JoinServerResponse joinServerResponse, out string error
 			);
+
 			if (joinServerResponse != null && error == null) {
 				Menu.change(new WaitMenu(new MainMenu(), joinServerResponse.server, false));
 			} else {
@@ -359,19 +375,6 @@ class Program {
 		} else {
 			Menu.render();
 		}
-		// TODO: Make this work for errors.
-		//if (Global.debug) {
-			//Draw debug strings
-			//Global.debugString1 = ((int)Math.Round(1.0f / Global.spf2)).ToString();
-			/*if (Global.level != null && Global.level.character != null) {
-				Global.debugString2 = Mathf.Floor(Global.level.character.pos.x / 8).ToString("0") + "," +
-				Mathf.Floor(Global.level.character.pos.y / 8).ToString("0");
-			}*/
-			/*Fonts.drawText(FontType.Red, Global.debugString1, 20, 20);
-			Fonts.drawText(FontType.Red, Global.debugString2, 20, 30);
-			Fonts.drawText(FontType.Red, Global.debugString3, 20, 40);
-			*/
-		//}
 	}
 
 	/// <summary>
@@ -688,11 +691,12 @@ class Program {
 	}
 
 	static void loadLevels() {
-		var levelPaths = Helpers.getFiles(Global.assetPath + "assets/maps", true, "json");
+		//var levelPaths = Helpers.getFiles(Global.assetPath + "assets/maps", true, "json");
 
 		var fileChecksumDict = new Dictionary<string, string>();
 		var invertedMaps = new HashSet<string>();
-		foreach (string levelPath in levelPaths) {
+
+		/*foreach (string levelPath in levelPaths) {
 			string levelText = File.ReadAllText(levelPath);
 			string levelIniText = "";
 			string levelIniLocation = Path.GetDirectoryName(levelPath) + "/mapData.ini";
@@ -717,10 +721,11 @@ class Program {
 			} else {
 				Global.levelDatas.Add(levelData.name, levelData);
 			}
-		}
+		}¨*/
+
 		Global.fileChecksumBlob += "-" + getFileBlobMD5(fileChecksumDict);
 
-		var customLevelPaths = Helpers.getFiles(Global.assetPath + "assets/maps_custom", true, "json");
+		var customLevelPaths = Helpers.getFiles(Global.assetPath + "assets/maps", true, "json");
 		foreach (string levelPath in customLevelPaths) {
 			if (levelPath.Contains("/sprites/")) continue;
 
@@ -730,7 +735,7 @@ class Program {
 			if (File.Exists(levelIniLocation)) {
 				levelIniText = File.ReadAllText(levelIniLocation);
 			}
-			var levelData = new LevelData(levelText, levelIniText, true);
+			var levelData = new LevelData(levelText, levelIniText, false);
 			if (levelData.name.EndsWith("_mirrored")) {
 				Global.levelDatas.Add(levelData.name, levelData);
 				levelData.isMirrored = true;
